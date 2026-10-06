@@ -1,0 +1,561 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Approval &amp; DoA Listing Cases</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: one calm reading column; a who-sees-what grid is the centerpiece, case cards below it. */
+:root {
+  --bg: #f4f6f8; --surface: #ffffff; --ink: #18202e; --muted: #5b6474;
+  --line: #dde2ea; --line-strong: #b9c1cd; --accent: #0e6f7c; --accent-ink: #ffffff;
+  --good: #1a7f4b;  --good-bg: #e3f5ea;
+  --warn: #9a6200;  --warn-bg: #fff3d6;
+  --bad:  #b42318;  --bad-bg:  #fde8e6;
+  --info: #1f5fbf;  --info-bg: #e5efff;
+  --note: #6b4fbb;  --note-bg: #efeaff;
+  --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #10141b; --surface: #171c25; --ink: #e6e9ef; --muted: #9aa3b2;
+  --line: #2a313d; --line-strong: #46505f; --accent: #4fc1cf; --accent-ink: #0b1a1d;
+  --good: #5fd39a;  --good-bg: #12301f;
+  --warn: #f2c052;  --warn-bg: #3a2c08;
+  --bad:  #ff8a7a;  --bad-bg:  #3d1612;
+  --info: #7fb0ff;  --info-bg: #13264a;
+  --note: #b9a2ff;  --note-bg: #2a2147;
+  color-scheme: dark;
+} }
+:root[data-theme="dark"] {
+  --bg: #10141b; --surface: #171c25; --ink: #e6e9ef; --muted: #9aa3b2;
+  --line: #2a313d; --line-strong: #46505f; --accent: #4fc1cf; --accent-ink: #0b1a1d;
+  --good: #5fd39a;  --good-bg: #12301f;
+  --warn: #f2c052;  --warn-bg: #3a2c08;
+  --bad:  #ff8a7a;  --bad-bg:  #3d1612;
+  --info: #7fb0ff;  --info-bg: #13264a;
+  --note: #b9a2ff;  --note-bg: #2a2147;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink);
+  font: 400 1rem/1.55 var(--font-body);
+  padding-inline: 16px; padding-block: 36px 72px;
+}
+.wrap { max-width: 1060px; margin: 0 auto; display: grid; gap: 52px; }
+section { display: grid; gap: 18px; min-width: 0; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; letter-spacing: -0.01em; }
+h1 { font-size: clamp(2rem, 4.6vw, 3rem); line-height: 1.05; font-weight: 700; }
+h2 { font-size: clamp(1.35rem, 2.6vw, 1.75rem); line-height: 1.15; font-weight: 700; }
+h3 { font-size: 1.15rem; line-height: 1.25; font-weight: 600; }
+p { margin: 0; }
+a { color: var(--accent); text-underline-offset: 3px; }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+code { font-family: var(--font-mono); font-size: .84em; background: var(--surface); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; overflow-wrap: anywhere; }
+.eyebrow { font: 700 .75rem/1.2 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; }
+.sub { color: var(--muted); }
+
+/* hero */
+.hero { display: grid; gap: 18px; }
+.lead { font-size: 1.2rem; line-height: 1.5; }
+.callout { border-radius: 10px; padding: 14px 16px; display: grid; gap: 6px; }
+.callout b.lbl { font-size: .85rem; letter-spacing: .02em; }
+.callout.good { background: var(--good-bg); } .callout.good b.lbl { color: var(--good); }
+.callout.info { background: var(--info-bg); } .callout.info b.lbl { color: var(--info); }
+.callout.warn { background: var(--warn-bg); } .callout.warn b.lbl { color: var(--warn); }
+
+/* cast + glossary */
+.cast { display: flex; flex-wrap: wrap; gap: 10px 22px; }
+.who { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; }
+.av { width: 30px; height: 30px; border-radius: 50%; display: inline-grid; place-items: center; font: 700 .85rem/1 var(--font-mono); background: var(--ink); color: var(--bg); flex: none; }
+.av.req { background: var(--accent); color: var(--accent-ink); }
+.who small { font-weight: 400; color: var(--muted); }
+.gloss { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 12px 24px; margin: 0; }
+.gloss div { min-width: 0; }
+.gloss dt { font: 700 .82rem/1.3 var(--font-mono); color: var(--accent); }
+.gloss dd { margin: 2px 0 0; color: var(--ink); }
+
+/* pills */
+.pill { display: inline-flex; align-items: center; gap: 5px; padding: 2px 10px; border-radius: 999px; font-size: .85rem; font-weight: 700; white-space: nowrap; line-height: 1.5; }
+.pill.good { color: var(--good); background: var(--good-bg); }
+.pill.bad { color: var(--bad); background: var(--bad-bg); }
+.pill.info { color: var(--info); background: var(--info-bg); }
+.pill.note { color: var(--note); background: var(--note-bg); }
+.pill.muted { color: var(--muted); background: transparent; border: 1px dashed var(--line-strong); padding: 1px 9px; }
+mark { background: var(--warn-bg); color: var(--ink); padding: 0 4px; border-radius: 4px; }
+
+/* matrix */
+.controls { display: flex; flex-wrap: wrap; gap: 12px 18px; align-items: center; }
+.seg { display: inline-flex; flex-wrap: wrap; gap: 4px; padding: 4px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+.seg button { font: 600 .92rem/1.2 var(--font-body); border: 0; background: transparent; color: var(--muted); padding: 8px 14px; border-radius: 7px; cursor: pointer; }
+.seg button:hover { color: var(--ink); }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.tally { font-weight: 600; display: flex; flex-wrap: wrap; gap: 6px 14px; }
+.tally .w { color: var(--warn); } .tally .f { color: var(--good); } .tally .s { color: var(--info); }
+.mode-desc { color: var(--muted); min-height: 1.5em; }
+.scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+.matrix { min-width: 820px; }
+th, td { text-align: left; vertical-align: top; padding: 11px 12px; border-bottom: 1px solid var(--line); }
+tr:last-child td { border-bottom: 0; }
+thead th { font: 700 .78rem/1.3 var(--font-mono); letter-spacing: .05em; text-transform: uppercase; color: var(--muted); background: var(--bg); }
+thead th .av { width: 24px; height: 24px; font-size: .72rem; margin-right: 6px; vertical-align: middle; }
+.matrix td.case { width: 230px; }
+.case a { font: 700 .8rem/1.2 var(--font-mono); color: var(--accent); text-decoration: none; }
+.case a:hover { text-decoration: underline; }
+.case span { display: block; font-size: .92rem; margin-top: 3px; }
+.kind-row td { background: var(--bg); font: 700 .74rem/1.2 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding-block: 7px; }
+td.cell-wrong { background: var(--warn-bg); }
+td.cell-fixed { background: var(--good-bg); }
+.c { display: grid; gap: 3px; justify-items: start; }
+.c + .c { margin-top: 8px; }
+.tab { font-size: .74rem; color: var(--muted); font-weight: 600; }
+.flag, .fixmark, .slice { display: block; font-size: .78rem; font-weight: 700; margin-top: 5px; }
+.flag { color: var(--warn); } .fixmark { color: var(--good); } .slice { color: var(--info); font-weight: 600; }
+.none { color: var(--line-strong); }
+
+/* root cause */
+.lanes { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr)); gap: 16px; }
+.lane { border-radius: 12px; padding: 18px; display: grid; gap: 12px; align-content: start; min-width: 0; }
+.lane.now { background: var(--warn-bg); } .lane.fix { background: var(--good-bg); }
+.lane h3 { font-size: 1.05rem; }
+.lane.now h3 { color: var(--warn); } .lane.fix h3 { color: var(--good); }
+.flow { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; counter-reset: s; }
+.flow li { counter-increment: s; display: grid; grid-template-columns: 26px 1fr; gap: 10px; align-items: start; background: var(--surface); border-radius: 8px; padding: 9px 11px; }
+.flow li::before { content: counter(s); font: 700 .78rem/26px var(--font-mono); text-align: center; border-radius: 50%; background: var(--bg); color: var(--ink); width: 26px; height: 26px; }
+.flow li.result::before { content: "→"; }
+.flow li.result { font-weight: 600; }
+.files { display: grid; gap: 6px; font-size: .92rem; }
+
+.principle { background: var(--info-bg); border-radius: 12px; padding: 18px 20px; display: grid; gap: 6px; }
+.principle .lbl { color: var(--info); font: 700 .78rem/1.2 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; }
+.principle p { font-size: 1.15rem; line-height: 1.5; }
+.parts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 16px; }
+.part { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.part h3 { font-size: 1.05rem; }
+.explains { font-size: .92rem; color: var(--muted); border-top: 1px solid var(--line); padding-top: 10px; }
+.explains a { font: 700 .82rem/1 var(--font-mono); text-decoration: none; }
+.explains a:hover { text-decoration: underline; }
+
+/* rule table */
+.rules { min-width: 640px; }
+.rules td:first-child { font-weight: 600; width: 34%; }
+
+/* cards */
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 460px), 1fr)); gap: 18px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px; display: grid; gap: 14px; align-content: start; min-width: 0; scroll-margin-top: 16px; }
+.card-top { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.tag { font: 700 .76rem/1 var(--font-mono); letter-spacing: .04em; padding: 5px 8px; border-radius: 6px; background: var(--bg); color: var(--ink); border: 1px solid var(--line); }
+.tag.kind { color: var(--muted); }
+.sharp { font-size: .78rem; font-weight: 700; color: var(--warn); }
+.steps { margin: 0; padding-left: 1.3em; display: grid; gap: 4px; }
+.steps li::marker { font-family: var(--font-mono); font-weight: 700; color: var(--muted); font-size: .85em; }
+.label { font: 700 .72rem/1.2 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.sees { display: grid; gap: 8px; }
+.row { display: grid; grid-template-columns: 30px 1fr; gap: 10px; align-items: start; padding: 8px 10px; border-radius: 8px; }
+.row.wrong { background: var(--warn-bg); }
+.row .what { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; min-width: 0; }
+.row .what .n { flex-basis: 100%; font-size: .9rem; color: var(--muted); }
+.row.wrong .what .n { color: var(--ink); }
+.why { font-size: .95rem; border-top: 1px solid var(--line); padding-top: 12px; display: grid; gap: 8px; }
+.after { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font-size: .9rem; }
+.after b { color: var(--good); }
+
+/* options */
+.opts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 16px; }
+.opt { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.opt.pick { border: 2px solid var(--good); }
+.opt dl { margin: 0; display: grid; gap: 8px; }
+.opt dt { font-size: .78rem; font-weight: 700; color: var(--muted); }
+.opt dd { margin: 0; }
+.watch { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
+.next { margin: 0; padding-left: 1.3em; display: grid; gap: 8px; }
+.next li::marker { font-family: var(--font-mono); font-weight: 700; color: var(--accent); }
+footer { color: var(--muted); font-size: .9rem; border-top: 1px solid var(--line); padding-top: 18px; display: grid; gap: 4px; }
+
+@media (prefers-reduced-motion: no-preference) {
+  td, .seg button { transition: background-color .18s ease, color .18s ease; }
+}
+</style>
+
+<div class="wrap">
+
+  <header class="hero">
+    <div class="eyebrow">
+      <a href="https://app.clickup.com/t/86e2qnf74">ClickUp 86e2qnf74</a>
+      <span>Ready for dev</span><span>No assignee</span><span>Approval + DoA</span>
+    </div>
+    <h1>Same document, different status for each person</h1>
+    <p class="lead">On the Approval and DoA list pages, each person's row is built <b>only from their own records</b>. Old decisions <mark>never go away</mark>. So someone who was taken off a document can see a wrong status for it forever.</p>
+    <div class="callout good">
+      <b class="lbl">✓ What to do</b>
+      <p>Chosen direction (option 2): keep rows that are no longer current, and show them as <b>Stale</b> in both lists. Then fix the two list queries and the Approval detail page so every case below follows that rule.</p>
+    </div>
+  </header>
+
+  <section aria-labelledby="cast-h">
+    <h2 id="cast-h">The same five people in every example</h2>
+    <div class="cast">
+      <span class="who"><span class="av req">R</span>Requester <small>sends the document for approval</small></span>
+      <span class="who"><span class="av">A</span>Approver</span>
+      <span class="who"><span class="av">B</span>Approver</span>
+      <span class="who"><span class="av">C</span>Approver</span>
+      <span class="who"><span class="av">D</span>Approver</span>
+    </div>
+    <dl class="gloss">
+      <div><dt>Approval</dt><dd>Each topic in the document (like “Indemnity”) gets approved on its own. Case IDs like CR-P1 keep the ticket's old “Contract Review” names.</dd></div>
+      <div><dt>DoA · Delegation of Authority</dt><dd>One approval request for the whole document.</dd></div>
+      <div><dt>Round</dt><dd>One pass of review. A new document version starts a new round.</dd></div>
+      <div><dt>STALE</dt><dd>An old record replaced by a newer one <i>before</i> anyone decided it.</dd></div>
+      <div><dt>My requests / Assigned to me</dt><dd>The two list tabs. One shows what you sent, the other what you must review.</dd></div>
+      <div><dt>Roll-up</dt><dd>An Approval row shows one status for many topics. <span class="pill bad">✕ Rejected</span> beats <span class="pill info">◷ In review</span> beats <span class="pill good">✓ Approved</span>.</dd></div>
+    </dl>
+  </section>
+
+  <section aria-labelledby="grid-h">
+    <h2 id="grid-h">Only the requester always sees the real status</h2>
+    <p class="sub">What each person's list row says for the document, case by case. Yellow cells show an outdated status: an old decision shown as if it were current. “Mismatch” marks a row that is fine on its own but behaves unlike similar cases. Switch the view to see what each fix would change.</p>
+    <div class="controls">
+      <div class="seg" role="group" aria-label="Which rule to show">
+        <button type="button" id="mode-today" data-mode="today" aria-pressed="true">Today</button>
+        <button type="button" id="mode-opt1" data-mode="opt1" aria-pressed="false">Option 1 · Hide old rows</button>
+        <button type="button" id="mode-opt2" data-mode="opt2" aria-pressed="false">Option 2 · Show as Stale (chosen)</button>
+      </div>
+      <div class="tally" id="tally" aria-live="polite"></div>
+    </div>
+    <p class="mode-desc" id="mode-desc"></p>
+    <div class="scroll">
+      <table class="matrix">
+        <thead>
+          <tr>
+            <th scope="col">Case</th>
+            <th scope="col"><span class="av req">R</span>Requester</th>
+            <th scope="col"><span class="av">A</span>Approver</th>
+            <th scope="col"><span class="av">B</span>Approver</th>
+            <th scope="col"><span class="av">C</span>Approver</th>
+            <th scope="col"><span class="av">D</span>Approver</th>
+          </tr>
+        </thead>
+        <tbody id="matrix-body"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section aria-labelledby="cause-h">
+    <h2 id="cause-h">The principle behind every case: your row only sees your own records</h2>
+    <div class="principle">
+      <b class="lbl">The principle</b>
+      <p>The list builds your row from <b>your own records only</b>, and it does that <b>first</b>. Only then does it look for the newest round. So a newer round that belongs to someone else can never replace your old one.</p>
+    </div>
+    <div class="parts">
+      <article class="part">
+        <h3>Only your records</h3>
+        <p>The list keeps only the rows where you are the requester (“My requests”) or the approver (“Assigned to me”).</p>
+        <p class="explains"><span class="label">Explains</span> <a href="#CR-P4">CR-P4</a> · <a href="#CR-P5">CR-P5</a> · <a href="#DoA-P5">DoA-P5</a>. Each person sees only their own slice of the document.</p>
+      </article>
+      <article class="part">
+        <h3>The newest round is picked too late</h3>
+        <p>It looks for the newest round per topic only among the rows it already kept. If the newer round is B's, A's list never sees it.</p>
+        <p class="explains"><span class="label">Explains</span> <a href="#CR-P1">CR-P1</a> · <a href="#CR-P2">CR-P2</a> · <a href="#DoA-P2">DoA-P2</a>. Old approvers stay frozen at their own verdict.</p>
+      </article>
+      <article class="part">
+        <h3>Only undecided records get replaced</h3>
+        <p>A new version marks rounds that are still pending as STALE. Decided rounds are never replaced. The Approval list hides STALE rows. The DoA list does not.</p>
+        <p class="explains"><span class="label">Explains</span> <a href="#CR-P3">CR-P3</a> (hidden, unlike CR-P1/P2) · <a href="#DoA-P1">DoA-P1</a> (shown as Stale, unlike CR-P3).</p>
+      </article>
+    </div>
+    <p>See it on CR-P1, from A's list:</p>
+    <div class="lanes">
+      <div class="lane now">
+        <h3>⚠ Today</h3>
+        <ol class="flow">
+          <li><span>Keep only rows where the approver is A.</span></li>
+          <li><span>Pick the newest round for each topic.</span></li>
+          <li class="result"><span>A only has round 1, so round 1 counts as “newest”. A sees <span class="pill bad">✕ Rejected</span>.</span></li>
+        </ol>
+      </div>
+      <div class="lane fix">
+        <h3>✓ Fix (option 2, chosen)</h3>
+        <ol class="flow">
+          <li><span>Find the newest round for each topic, across everyone.</span></li>
+          <li><span>Then keep A's rows. Mark any that are not the newest as Stale.</span></li>
+          <li class="result"><span>A's round 1 is older than B's round 2, so A sees <span class="pill note">⌛ Stale</span>.</span></li>
+        </ol>
+      </div>
+    </div>
+    <p>Both options start the same way: find the current round for everyone first. Option 2 then shows your older rows as Stale. Option 1 would hide them instead.</p>
+  </section>
+
+  <section aria-labelledby="rule-h">
+    <h2 id="rule-h">One rule explains every case</h2>
+    <p class="sub">A person's row comes from <b>their own</b> record for the document.</p>
+    <div class="scroll">
+      <table class="rules">
+        <thead><tr><th scope="col">Your own record for the document</th><th scope="col">Approval list today</th><th scope="col">DoA list today</th><th scope="col">With option 2</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>You decided it, and a newer record exists that you are not on</td>
+            <td class="cell-wrong">Shown, frozen at your verdict<span class="flag">⚠ outdated</span></td>
+            <td class="cell-wrong">Shown, frozen at your verdict<span class="flag">⚠ outdated</span></td>
+            <td><span class="pill note">⌛ Stale</span></td>
+          </tr>
+          <tr>
+            <td>STALE: replaced before you decided</td>
+            <td><span class="pill muted">– Not listed</span><span class="flag">↔ the two lists disagree</span></td>
+            <td><span class="pill note">⌛ Stale</span><span class="flag">↔ the two lists disagree</span></td>
+            <td><span class="pill note">⌛ Stale</span></td>
+          </tr>
+          <tr>
+            <td>You are on both an old record and the current one</td>
+            <td>Current one wins ✓</td>
+            <td>Current one wins ✓</td>
+            <td>No change</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section aria-labelledby="cases-h">
+    <h2 id="cases-h">Every case, step by step</h2>
+    <div class="cards" id="cards"></div>
+  </section>
+
+  <section aria-labelledby="opts-h">
+    <h2 id="opts-h">Pick one rule, use it for Approval and DoA</h2>
+    <div class="opts">
+      <article class="opt">
+        <h3>Option 1 · Hide rows that are no longer current</h3>
+        <dl>
+          <div><dt>What A sees in CR-P1</dt><dd>The document leaves A's list. A's rejection still shows in the detail page, under Previous rounds.</dd></div>
+          <div><dt>Why</dt><dd>The list becomes “work you can act on now”. It matches the detail page and the “live work only” choice already made in 86e2gqpup. CR-P1 and CR-P2 start behaving like CR-P3, which already hides the row.</dd></div>
+          <div><dt>Work</dt><dd>Small. Change two queries, no API or UI change.</dd></div>
+        </dl>
+      </article>
+      <article class="opt pick">
+        <span class="pill good">✓ Chosen</span>
+        <h3>Option 2 · Keep the row, show it as Stale</h3>
+        <dl>
+          <div><dt>What A sees in CR-P1</dt><dd>The row stays, with the status <span class="pill note">⌛ Stale</span>. A's rejection still shows in the detail page, under Previous rounds.</dd></div>
+          <div><dt>Why</dt><dd>One rule for both lists. Old approvers can still find documents they touched. No row claims a verdict that is no longer true. DoA-P1 already works this way.</dd></div>
+          <div><dt>Work</dt><dd>Medium. Both list queries find the current record first, then mark the viewer's older ones as Stale. The Approval detail page lets past participants in, like DoA already does. No new API field: both UIs can already show “Stale”.</dd></div>
+          <div><dt>⚠ Watch out</dt><dd><ol class="watch">
+            <li>“Stale” would mean two things. Today it means “replaced before anyone decided”. Work it out in the list. Never write STALE over an Approved or Rejected record, or the verdict is lost.</li>
+            <li>Approval rows: replaced rounds don't count toward the status or the topic count. The row shows Stale only when all of that person's topics were replaced.</li>
+            <li>The Approval detail page drops STALE rounds and gives a 404 to people who only have one. It must show them under Previous rounds and let those people in, like DoA.</li>
+            <li>This reverses the “live work only” choice in 86e2gqpup. Agree it with the ticket author.</li>
+            <li>Stale rows pile up. Hide Stale by default in the status filter, and keep it pickable.</li>
+          </ol></dd></div>
+        </dl>
+      </article>
+      <article class="opt">
+        <h3>Option 3 · Label “your part only” (add-on)</h3>
+        <dl>
+          <div><dt>What it fixes</dt><dd>CR-P4 and CR-P5. Approver rows only cover their own topics. Neither option 1 nor 2 changes that.</dd></div>
+          <div><dt>Idea</dt><dd>A small hint on approver rows, like <span class="pill info">ℹ Your topics only</span>.</dd></div>
+          <div><dt>Work</dt><dd>Small UI-only change. Can ship with 1 or 2.</dd></div>
+        </dl>
+      </article>
+    </div>
+  </section>
+
+  <section aria-labelledby="next-h">
+    <h2 id="next-h">Steps to finish the ticket</h2>
+    <ol class="next">
+      <li>Product (ticket author) agrees to option 2 (show as Stale), and says yes or no to option 3.</li>
+      <li>Update <code>docs/architecture/business-analysis/03-USECASES.md</code> with the list rule first. The team reviews it before any code.</li>
+      <li>Write one failing test per case on this page. The 8 cases are the test list.</li>
+      <li>Approval: in <code>list_grouping_rows_page</code>, find the newest round per (document, topic) across everyone first. Then keep the viewer's rows and mark older ones Stale. Replaced rounds don't count toward the row's status or topic count.</li>
+      <li>DoA: find the current request per document first. Then mark the viewer's older requests Stale, including decided, cancelled and expired ones.</li>
+      <li>Approval detail page: show STALE rounds under Previous rounds, and let anyone who was on the document open it, like DoA history does.</li>
+      <li>Status filter: hide Stale by default in both lists, and keep it pickable.</li>
+      <li>Run <code>make lint</code> and <code>make test</code>.</li>
+    </ol>
+    <div class="callout warn">
+      <b class="lbl">⚠ Not in this ticket</b>
+      <p><b>DoA-P3:</b> an overdue request shows <span class="pill info">◷ Pending</span> in the list but “Expired” in the detail page. That belongs to the DoA expiry work.</p>
+    </div>
+  </section>
+
+  <footer>
+    <span>Source: ClickUp task 86e2qnf74 and its attachment <code>2026-08-03-cr-doa-listing-cases.md</code>, checked against the code on main.</span>
+    <span>The people and topic names are examples.</span>
+  </footer>
+</div>
+
+<script>
+(function () {
+  var S = {
+    approved: ["Approved", "good", "✓"],
+    rejected: ["Rejected", "bad", "✕"],
+    review:   ["In review", "info", "◷"],
+    pending:  ["Pending", "info", "◷"],
+    stale:    ["Stale", "note", "⌛"],
+    hidden:   ["Not listed", "muted", "–"]
+  };
+  var PEOPLE = ["R", "A", "B", "C", "D"];
+
+  var SC = [
+    { id: "CR-P1", kind: "CR", sharp: true, title: "The rejector sees “Rejected” forever",
+      steps: ["R sends document D for review. Topic “Indemnity” goes to A.", "A rejects “Indemnity”.", "R sends a new version. “Indemnity” now goes to B (round 2)."],
+      today: { R: { s: "review", n: "Sees B’s new round. Correct." }, A: { s: "rejected", f: "wrong", n: "Stuck on Rejected, even while B reviews again." }, B: { s: "review" } },
+      opt1: { A: { s: "hidden", f: "fixed", n: "A’s rejection still shows in the detail page, under Previous rounds." } },
+      opt2: { A: { s: "stale", f: "fixed", n: "Listed as Stale. A’s rejection still shows in the detail page, under Previous rounds." } },
+      detail: { A: { t: "Opens. B’s round under “Other approvers”, A’s own round under “Previous rounds”." }, B: { t: "Own round under “Assigned to you”. A’s rejected round under “Previous rounds”." } },
+      why: "A’s finished round is never replaced. A’s list only reads A’s own rows, so it never sees B’s round 2. And Rejected beats every other status." },
+    { id: "CR-P2", kind: "CR", title: "The old approver sees “Approved” while B can still reject",
+      steps: ["R sends D. “Indemnity” goes to A.", "A approves “Indemnity”.", "R sends a new version. “Indemnity” now goes to B."],
+      today: { R: { s: "review" }, A: { s: "approved", f: "wrong", n: "Looks done, but B may still reject it." }, B: { s: "review" } },
+      opt1: { A: { s: "hidden", f: "fixed" } },
+      opt2: { A: { s: "stale", f: "fixed" } },
+      why: "Same cause as CR-P1. If A also has another open topic, A sees “In review”, but the old approval still adds 1 to A’s topic count." },
+    { id: "CR-P3", kind: "CR", title: "Reassigned before deciding? The document just vanishes",
+      steps: ["R sends D. “Indemnity” goes to A.", "A has not decided yet.", "R sends a new version. “Indemnity” now goes to B. A’s round 1 becomes STALE."],
+      today: { R: { s: "review" }, A: { s: "hidden", f: "mismatch", n: "Gone with no trace. Fine on its own, but in CR-P1 and CR-P2 the same action keeps the row." }, B: { s: "review" } },
+      opt1: { A: { s: "hidden", f: "same", n: "Already hidden today. Option 1 makes CR-P1 and CR-P2 match this." } },
+      opt2: { A: { s: "stale", f: "fixed", n: "The row comes back as Stale. Opening it needs the Approval detail page to let A in (today: 404)." } },
+      detail: { A: { t: "404, cannot open it. Access needs a round that is not STALE. To do for option 2: let A in." }, B: { t: "Own round under “Assigned to you”. A appears nowhere, not even under “Previous rounds”. To do for option 2: show A’s Stale round there." } },
+      why: "The Approval list hides STALE rows. A decided round is never STALE, so it stays. Same user action, opposite result. The detail page drops STALE rounds too, so A is gone everywhere." },
+    { id: "CR-P4", kind: "CR", title: "Four people, three different statuses",
+      steps: ["R sends D with two topics: “Indemnity” to A, “Payment terms” to C.", "C approves “Payment terms”. A rejects “Indemnity”.", "R sends a new version. “Indemnity” now goes to B."],
+      today: { R: { s: "review", n: "The only row that covers the whole document." }, A: { s: "rejected", f: "wrong" }, B: { s: "review" }, C: { s: "approved", f: "slice", n: "Only C’s topic, not the whole document." } },
+      opt1: { A: { s: "hidden", f: "fixed" } },
+      opt2: { A: { s: "stale", f: "fixed" } },
+      why: "Each approver’s row rolls up only their own topics. Only the requester’s row covers all of them. Option 3 would label C’s row." },
+    { id: "CR-P5", kind: "CR", title: "One person, two tabs, two statuses",
+      steps: ["C sends D for review with two topics.", "“Payment terms” goes to C (C is also an approver). “Indemnity” goes to A.", "C approves “Payment terms”. A has not decided."],
+      today: { A: { s: "review" }, C: [{ s: "review", tab: "My requests", n: "Both rows are for the same document." }, { s: "approved", f: "slice", tab: "Assigned to me" }] },
+      why: "“My requests” rolls up all topics. “Assigned to me” rolls up only C’s own topics. Options 1 and 2 do not change this. Option 3 would label it." },
+    { id: "DoA-P1", kind: "DoA", title: "Old approvers get a dead “Stale” row",
+      steps: ["R sends DoA request 1 to A and B.", "Before they decide, R sends request 2 to C and D.", "Request 1 becomes STALE (replaced by the newer request)."],
+      today: { R: { s: "pending" }, A: { s: "stale", f: "mismatch", m: "mismatch with the Approval list", n: "A row with nothing to do. The Approval list would hide it." }, B: { s: "stale", f: "mismatch", m: "mismatch with the Approval list" }, C: { s: "pending" }, D: { s: "pending" } },
+      opt1: { A: { s: "hidden", f: "fixed", n: "Same as the Approval list already does." }, B: { s: "hidden", f: "fixed" } },
+      opt2: { A: { s: "stale", f: "same", n: "Already Stale today. Option 2 makes the other cases match this." }, B: { s: "stale", f: "same" } },
+      after2: "No change. DoA-P1 already shows Stale. Option 2 makes the other cases match it.",
+      why: "The Approval list hides STALE rows. The DoA list does not filter them at all." },
+    { id: "DoA-P2", kind: "DoA", title: "A past rejection sticks for both old approvers",
+      steps: ["R sends request 1 to A and B.", "A rejects, so request 1 is Rejected.", "R sends request 2 to C and D."],
+      today: { R: { s: "pending" }, A: { s: "rejected", f: "wrong", n: "Forever, while C and D are still deciding." }, B: { s: "rejected", f: "wrong", n: "B sees request 1’s result too." }, C: { s: "pending" }, D: { s: "pending" } },
+      opt1: { A: { s: "hidden", f: "fixed" }, B: { s: "hidden", f: "fixed" } },
+      opt2: { A: { s: "stale", f: "fixed" }, B: { s: "stale", f: "fixed" } },
+      why: "A decided request is never marked STALE, so it lives next to request 2. A and B are only on request 1." },
+    { id: "DoA-P5", kind: "DoA", title: "Approved for some, Pending for others",
+      steps: ["R sends request 1 to A and B.", "A and B approve.", "R sends request 2 to C and D."],
+      today: { R: { s: "pending" }, A: { s: "approved", f: "wrong", n: "No row shows the document’s overall DoA state." }, B: { s: "approved", f: "wrong" }, C: { s: "pending" }, D: { s: "pending" } },
+      opt1: { A: { s: "hidden", f: "fixed" }, B: { s: "hidden", f: "fixed" } },
+      opt2: { A: { s: "stale", f: "fixed" }, B: { s: "stale", f: "fixed" } },
+      why: "Each person’s row comes only from the request they are on." }
+  ];
+
+  var DESC = {
+    today: "What each person’s list shows right now.",
+    opt1: "Hide a document once your record is no longer the current one. Old decisions stay in the detail page under Previous rounds.",
+    opt2: "Keep the row, with the status Stale. The old decision still shows in the detail page, under Previous rounds."
+  };
+
+  function list(v) { return v == null ? [] : (Array.isArray(v) ? v : [v]); }
+  function view(sc, mode) {
+    if (mode === "today") return sc.today;
+    var out = {}, k;
+    for (k in sc.today) out[k] = sc.today[k];
+    var o = sc[mode] || {};
+    for (k in o) out[k] = o[k];
+    return out;
+  }
+  function pill(c) {
+    var d = S[c.s];
+    return '<span class="pill ' + d[1] + '"><span aria-hidden="true">' + d[2] + "</span> " + (c.l || d[0]) + "</span>";
+  }
+  function has(cs, f) { return cs.some(function (c) { return c.f === f; }); }
+  function mm(cs) { var c = cs.filter(function (c) { return c.m; })[0]; return c ? c.m : "mismatch with CR-P1/P2"; }
+
+  function cellHtml(v) {
+    var cs = list(v);
+    if (!cs.length) return '<span class="none" title="Not part of this case">·</span>';
+    var h = cs.map(function (c) {
+      return '<div class="c">' + (c.tab ? '<span class="tab">' + c.tab + "</span>" : "") + pill(c) +
+        (c.f === "slice" ? '<span class="slice">ℹ their part only</span>' : "") + "</div>";
+    }).join("");
+    if (has(cs, "wrong")) h += '<span class="flag">⚠ outdated</span>';
+    if (has(cs, "mismatch")) h += '<span class="flag">↔ ' + mm(cs) + '</span>';
+    if (has(cs, "same")) h += '<span class="fixmark">✓ already right, no change</span>';
+    if (has(cs, "fixed")) h += '<span class="fixmark">✓ fixed</span>';
+    return h;
+  }
+
+  function renderMatrix(mode) {
+    var body = document.getElementById("matrix-body");
+    var rows = [], lastKind = null, wrong = 0, mismatch = 0, fixed = 0, slice = 0;
+    SC.forEach(function (sc) {
+      if (sc.kind !== lastKind) {
+        rows.push('<tr class="kind-row"><td colspan="6">' + (sc.kind === "CR" ? "Approval · per topic" : "DoA · whole document") + "</td></tr>");
+        lastKind = sc.kind;
+      }
+      var v = view(sc, mode);
+      var tds = PEOPLE.map(function (p) {
+        var cs = list(v[p]);
+        if (has(cs, "wrong")) wrong++;
+        if (has(cs, "mismatch")) mismatch++;
+        if (has(cs, "fixed")) fixed++;
+        if (has(cs, "slice")) slice++;
+        var cls = has(cs, "wrong") ? "cell-wrong" : (has(cs, "fixed") ? "cell-fixed" : "");
+        return '<td class="' + cls + '">' + cellHtml(v[p]) + "</td>";
+      }).join("");
+      rows.push('<tr><td class="case"><a href="#' + sc.id + '">' + sc.id + "</a><span>" + sc.title + "</span></td>" + tds + "</tr>");
+    });
+    body.innerHTML = rows.join("");
+    var t = [];
+    if (mode !== "today") t.push('<span class="f">✓ ' + fixed + " fixed</span>");
+    t.push('<span class="w">⚠ ' + wrong + " outdated</span>");
+    if (mismatch) t.push('<span class="w">↔ ' + mismatch + " mismatch</span>");
+    t.push('<span class="s">ℹ ' + slice + " show only their part</span>");
+    document.getElementById("tally").innerHTML = t.join("");
+    document.getElementById("mode-desc").textContent = DESC[mode];
+  }
+
+  function renderCards() {
+    document.getElementById("cards").innerHTML = SC.map(function (sc) {
+      var v = sc.today;
+      var sees = PEOPLE.filter(function (p) { return v[p]; }).map(function (p) {
+        var cs = list(v[p]);
+        var notes = cs.filter(function (c) { return c.n; }).map(function (c) { return c.n; });
+        var pills = cs.map(function (c) { return (c.tab ? '<span class="tab">' + c.tab + "</span>" : "") + pill(c); }).join("");
+        var flag = has(cs, "wrong") ? '<span class="flag" style="margin:0">⚠ outdated</span>' : has(cs, "mismatch") ? '<span class="flag" style="margin:0">↔ ' + mm(cs) + '</span>' : (has(cs, "slice") ? '<span class="slice" style="margin:0">ℹ their part only</span>' : "");
+        return '<div class="row' + (has(cs, "wrong") ? " wrong" : "") + '"><span class="av' + (p === "R" ? " req" : "") + '">' + p + '</span><div class="what">' + pills + flag +
+          (notes.length ? '<span class="n">' + notes.join(" ") + "</span>" : "") + "</div></div>";
+      }).join("");
+      var detail = sc.detail ? '<div class="sees"><div class="label">What the detail page shows</div>' + PEOPLE.filter(function (p) { return sc.detail[p]; }).map(function (p) {
+        var d = sc.detail[p], bad = d.f === "wrong";
+        return '<div class="row' + (bad ? " wrong" : "") + '"><span class="av' + (p === "R" ? " req" : "") + '">' + p + '</span><div class="what">' +
+          (bad ? '<span class="flag" style="margin:0">⚠ outdated</span>' : "") + '<span class="n">' + d.t + "</span></div></div>";
+      }).join("") + "</div>" : "";
+      var after = sc.after2 ? '<span>' + sc.after2 + '</span>' : sc.opt2 ? Object.keys(sc.opt2).map(function (p) {
+        return '<span><span class="av' + (p === "R" ? " req" : "") + '" style="width:22px;height:22px;font-size:.68rem">' + p + "</span> → " + pill(sc.opt2[p]) + "</span>";
+      }).join("") : '<span class="sub">No change. Needs option 3.</span>';
+      return '<article class="card" id="' + sc.id + '">' +
+        '<div class="card-top"><span class="tag">' + sc.id + '</span><span class="tag kind">' + (sc.kind === "CR" ? "Approval" : "DoA") + "</span>" +
+        (sc.sharp ? '<span class="sharp">⚠ Worst case</span>' : "") + "</div>" +
+        "<h3>" + sc.title + "</h3>" +
+        '<div><div class="label">What happens</div><ol class="steps">' + sc.steps.map(function (s) { return "<li>" + s + "</li>"; }).join("") + "</ol></div>" +
+        '<div class="sees"><div class="label">What each person’s list shows today</div>' + sees + "</div>" +
+        detail +
+        '<div class="why"><p><b>Why:</b> ' + sc.why + '</p><div class="after"><b>✓ With option 2:</b>' + after + "</div></div>" +
+        "</article>";
+    }).join("");
+  }
+
+  var buttons = Array.prototype.slice.call(document.querySelectorAll(".seg button"));
+  function setMode(mode) {
+    buttons.forEach(function (b) { b.setAttribute("aria-pressed", b.dataset.mode === mode ? "true" : "false"); });
+    renderMatrix(mode);
+  }
+  buttons.forEach(function (b) { b.addEventListener("click", function () { setMode(b.dataset.mode); }); });
+
+  renderCards();
+  setMode("today");
+})();
+</script>
+
+</body></html>
